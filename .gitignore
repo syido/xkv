@@ -1,0 +1,11 @@
+build
+
+main_test.cpp
+main_test
+
+*.dSYM
+
+!.clang-format
+!.gitignore
+.DS_Store
+.vscode

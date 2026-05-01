@@ -1,0 +1,6 @@
+BasedOnStyle: Microsoft
+IndentWidth: 4
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Attach
+BreakTemplateDeclarations: Yes
