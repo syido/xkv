@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -16,9 +17,12 @@ struct connection {
 };
 
 class io;
-using on_recv_func = void (*)(io *io, const connection &conn);
+// 回调类型
+using on_recv_func = std::function<void(io *io, const connection &conn)>;   // TODO: 后面需要检测热点
 
 class io {
+
+  private:
     // 侦听的fd
     int listen_fd = -1;
     // 接收的回调函数

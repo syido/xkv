@@ -1,8 +1,8 @@
-#include <iostream>
 #ifdef __APPLE__ // macos
 
 #include <array>
 #include <cerrno>
+#include <iostream>
 #include <stdexcept>
 
 #include <fcntl.h>
@@ -55,13 +55,17 @@ void io::loop() {
 
             if (event.flags & EV_ERROR) { // 错误
                 throw io_error;
-            } else if (event.flags & EV_EOF) { // 连接关闭
-                close_connect(fd);
             } else if (fd == listen_fd) { // 新连接
                 create_connect(kq);
+            } else if (event.filter == EVFILT_READ) { // 客户端发来数据
+                read_connect(fd);
             } else {
                 // TODO: 未完成
                 std::cout << "uncomplete yield 未完成" << std::endl;
+            }
+
+            if (event.flags & EV_EOF) { // 连接关闭
+                close_connect(fd);
             }
         }
     }
@@ -125,7 +129,7 @@ void io::read_connect(int client_fd) {
             received = true;
         } else if (size == 0) { // 连接关闭
             close_connect(client_fd);
-            return;
+            break;
         } else if (errno == EWOULDBLOCK) { // 没有数据可读
             break;
         } else { // 发生错误
@@ -133,10 +137,10 @@ void io::read_connect(int client_fd) {
             close_connect(client_fd);
             return;
         }
-    }
 
-    if (received) { // 读取完毕，回调
-        on_recv(this, conn);
+        if (received) { // 读取完毕，回调
+            on_recv(this, conn);
+        }
     }
 }
 } // namespace xkv
