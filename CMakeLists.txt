@@ -19,7 +19,7 @@ file(
 )
 
 add_library(
-    ${XkvTest} SHARED
+    ${XkvTest} STATIC
     ${XkvTestSource}
 )
 
@@ -28,6 +28,11 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+# 跨平台
+if(WIN32)
+    target_link_libraries(${XkvTest} PUBLIC ws2_32)
+endif()
 
 # find_package(figcone CONFIG REQUIRED)
 

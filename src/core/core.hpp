@@ -9,9 +9,6 @@ class core {
   private:
     handler handler;
 
-  private:
-    static int create_listen(int port);
-
   public:
     core(const core &) = delete;
     core() = default;

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstddef>
-
 #include <core/data/types.hpp>
 #include <core/init.hpp>
 #include <core/result.hpp>
@@ -25,12 +23,12 @@ class hashtable {
     using bucket_type = std::vector<entry_type>;            // 桶类型
     using bucket_iterator = typename bucket_type::iterator; // 桶迭代器
 
-    int rehash_process = NOT_REHASHING;   // rehash已完成的进度，-2表示不在rehash，-1表示即将向扩容
-    uint old_size_expr = 0;               // 若在rehash时，旧桶数的幂
-    uint table_size_expr = old_size_expr; // 桶数的幂
-    size_t size = 0;                      // 表元素的数量
-    size_t bytes = 0;                     // TODO: 表占用的字节数（未完成）
-    std::vector<bucket_type *> table;     // 桶表
+    int rehash_process = NOT_REHASHING;           // rehash已完成的进度，-2表示不在rehash，-1表示即将向扩容
+    unsigned int old_size_expr = 0;               // 若在rehash时，旧桶数的幂
+    unsigned int table_size_expr = old_size_expr; // 桶数的幂
+    size_t size = 0;                              // 表元素的数量
+    size_t bytes = 0;                             // TODO: 表占用的字节数（未完成）
+    std::vector<bucket_type *> table;             // 桶表
 
     // 获取元素所在桶、迭代器与用之模的幂（提供给get和remove），并决定找不到是创建还是返回错误（提供给set）
     std::expected<std::tuple<bucket_type &, bucket_iterator>, app_result>
@@ -78,7 +76,7 @@ auto hashtable<E>::find(const std::string &key, bool create_if_not_found)
         bool is_increase = old_size_expr < table_size_expr;
         // 先用的旧桶求模
         mod = get_expr_mod(hash, old_size_expr);
-        if ((is_increase && mod <= static_cast<size_t>(rehash_process)) || 
+        if ((is_increase && mod <= static_cast<size_t>(rehash_process)) ||
             (!is_increase && mod >= static_cast<size_t>(rehash_process))) {
             mod = get_expr_mod(hash, table_size_expr);
         }
@@ -137,7 +135,7 @@ hashtable<E>::~hashtable() {
 // TODO: 没有处理扩容失败、没有处理缩容
 template <supported_type E>
 auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
-    if (rehash_process == NOT_REHASHING) {  // 仅当不在rehash中时才处理
+    if (rehash_process == NOT_REHASHING) { // 仅当不在rehash中时才处理
         if (changed) {
             if (too_big || size > table.size() * config.rehash_fractor) { // 桶太大或超过负载因子则扩容
                 ++table_size_expr;
@@ -147,7 +145,7 @@ auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
         }
     }
 
-    if (table_size_expr > old_size_expr) {  // 正在扩容中
+    if (table_size_expr > old_size_expr) { // 正在扩容中
         size_t old_table_size = 1 << old_size_expr;
         size_t old_mod = static_cast<size_t>(rehash_process);
 
@@ -155,7 +153,7 @@ auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
             auto &old_bucket = *table[old_mod];
             for (auto it = old_bucket.begin(); it != old_bucket.end();) {
                 size_t new_mod = get_expr_mod(get_hash(it->first), table_size_expr);
-                if (new_mod != old_mod) {   // 新模不同于旧模，增到新桶中，从旧桶移出
+                if (new_mod != old_mod) { // 新模不同于旧模，增到新桶中，从旧桶移出
                     if (table[new_mod] == nullptr) {
                         table[new_mod] = new bucket_type;
                     }
@@ -205,7 +203,7 @@ auto hashtable<E>::set(const std::string &key, E value) -> app_result {
     }
 
     auto &[vec, it] = res.value();
-    if (it != vec.end()) {          // 找到元素
+    if (it != vec.end()) {             // 找到元素
         it->second = std::move(value); // 替换元素
     } else {
         vec.emplace_back(key, std::move(value));

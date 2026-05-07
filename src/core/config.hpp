@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <unistd.h>
 
 namespace xkv {
 
@@ -22,7 +21,7 @@ struct static_config {
     // kevent数组的的尺寸
     static constexpr int kevent_size = 64;
     // socket缓冲区的尺寸
-    static constexpr ssize_t buffer_size = 4096;
+    static constexpr size_t buffer_size = 4096;
 };
 
 }

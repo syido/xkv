@@ -40,6 +40,9 @@ class io {
     // 启动循环
     void loop();
 
+    // 创建监听socket
+    static int create_listen(int port);
+
   private:
     // 关闭连接的分支
     void close_connect(int event_fd);
