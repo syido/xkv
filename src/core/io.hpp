@@ -4,21 +4,35 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 namespace xkv {
 
+// 连接实例
 struct connection {
+
+  public:
     bool closed = false;
     int fd = -1;
 
     std::string inbuf;
+    std::string_view outbuf_view;
+
+  private:
     std::string outbuf;
+
+  public:
+    // 构造函数
+    explicit connection(int fd);
+
+    // 对outbuf赋值
+    void set_outbuf(std::string buf);
 };
 
 class io;
 // 回调类型
-using on_recv_func = std::function<void(io *io, const connection &conn)>;   // TODO: 后面需要检测热点
+using on_recv_func = std::function<void(io *io, connection &conn)>;   // TODO: 后面需要检测热点
 
 class io {
 
@@ -49,7 +63,15 @@ class io {
     // 创建连接的分支
     void create_connect(int kq);
     // 读取数据的分支
-    void read_connect(int client_fd);
+    void read_connect(int kq, int client_fd);
+    // 写入数据的分支
+    void write_connect(int kq, int client_fd);
+
+    // 将client_fd加回进写入队列
+    void write_back(int kq, int client_fd);
+
+    // 检查回复内容
+    void check_response(connection &conn);
 };
 
 } // namespace xkv

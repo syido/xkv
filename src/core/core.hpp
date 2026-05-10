@@ -13,8 +13,6 @@ class core {
     core(const core &) = delete;
     core() = default;
 
-    // 打印欢迎信息
-    void print_welcome();
     // 启动主循环
     void loop();
 };

@@ -3,31 +3,21 @@
 #include <core/init.hpp>
 #include <core/io.hpp>
 
-#include <iostream>
+#include <cstddef>
+#include <string>
 
 using namespace std;
 
 namespace xkv {
 
-void core::print_welcome() {
-    cout << "hello, xkv!" << '\n';
-}
-
 void core::loop() {
-    if (static_config::welcome_msg) {
-        print_welcome();
-    }
-
     int fd = io::create_listen(config.port);
-    auto handler_func = [this](io *io, const connection &conn) -> void {
-        auto [code, str] = handler.handle(conn.inbuf);
-        // TODO: 暂时打印
-        if (code != app_result::ok) {
-            cout << "failed: " << static_cast<int>(code) << endl;
-        } else {
-            cout << (str.empty() ? "ok" : "ok: ") << str << endl;
-        }
+    auto handler_func = [this](io *io, connection &conn) -> void {
+        auto res = handler.handle(conn.inbuf);
+        auto buf = handler.make_response(res.first, res.second);
+        conn.set_outbuf(buf);
     };
+
     xkv::io{fd, handler_func}.loop();
 }
 

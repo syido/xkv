@@ -11,35 +11,62 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     message(FATAL_ERROR "vcpkg工具链未定义")
 endif()
 
-# 测试入口
-set(XkvTest "xkv_test")
+
+# 测试入口: xkv_core
+set(XkvCore "xkv_core")
 file(
-    GLOB_RECURSE XkvTestSource
+    GLOB_RECURSE XkvCoreSource
+    CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp"
 )
 
 add_library(
-    ${XkvTest} STATIC
-    ${XkvTestSource}
+    ${XkvCore} STATIC
+    ${XkvCoreSource}
 )
 
 target_include_directories(
-    ${XkvTest} PUBLIC
+    ${XkvCore} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # 跨平台
 if(WIN32)
-    target_link_libraries(${XkvTest} PUBLIC ws2_32)
+    target_link_libraries(${XkvCore} PUBLIC ws2_32)
 endif()
 
-# find_package(figcone CONFIG REQUIRED)
-
 set_target_properties(
-    ${XkvTest} PROPERTIES
+    ${XkvCore} PROPERTIES
     PREFIX ""
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
+)
+
+
+# 命令行: xkv_cli
+set(XkvCli "xkv_cli")
+file(
+    GLOB_RECURSE XkvCliSource
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/cli/*.cpp"
+)
+
+add_executable(${XkvCli} ${XkvCliSource})
+target_link_libraries(${XkvCli} PRIVATE ${XkvCore})
+
+target_include_directories(
+    ${XkvCli} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+find_package(asio CONFIG REQUIRED)
+target_link_libraries(${XkvCli} PRIVATE asio::asio)
+
+set_target_properties(
+    ${XkvCli} PROPERTIES
+    PREFIX ""
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
 )

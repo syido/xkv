@@ -15,9 +15,6 @@ struct app_config {
 };
 
 struct static_config {
-    // 欢迎信息
-    static constexpr bool welcome_msg = true;
-
     // kevent数组的的尺寸
     static constexpr int kevent_size = 64;
     // socket缓冲区的尺寸

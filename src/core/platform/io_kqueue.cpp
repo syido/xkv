@@ -96,7 +96,9 @@ void io::loop() {
             } else if (fd == listen_fd) { // 新连接
                 create_connect(kq);
             } else if (event.filter == EVFILT_READ) { // 客户端发来数据
-                read_connect(fd);
+                read_connect(kq, fd);
+            } else if (event.filter == EVFILT_WRITE) { // 客户端可写
+                write_connect(kq, fd);
             } else {
                 // TODO: 未完成
                 std::cout << "uncomplete yield 未完成" << std::endl;
@@ -130,12 +132,7 @@ void io::create_connect(int kq) {
         }
 
         set_non_blocking(client_fd); // client也设为非阻塞
-
-        connections[client_fd] = connection{
-            // 如果新连接成功，则添加到监听列表
-            .closed = false,
-            .fd = client_fd,
-        };
+        connections.emplace(client_fd, connection{client_fd}); // 如果新连接成功，则添加到监听列表
 
         struct kevent client_event;
         EV_SET(&client_event, client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
@@ -148,7 +145,7 @@ void io::create_connect(int kq) {
     }
 }
 
-void io::read_connect(int client_fd) {
+void io::read_connect(int kq, int client_fd) {
     auto it = connections.find(client_fd);
     if (it == connections.end()) { // 找不到连接
         return;
@@ -178,9 +175,58 @@ void io::read_connect(int client_fd) {
 
         if (received) { // 读取完毕，回调
             on_recv(this, conn);
+            check_response(conn);
+            write_back(kq, client_fd);
         }
     }
 }
+
+void io::write_connect(int kq, int client_fd) {
+    auto it = connections.find(client_fd);
+    if (it == connections.end()) { // 找不到连接
+        return;
+    }
+
+    auto &conn = it->second;
+
+    while (!conn.outbuf_view.empty()) {
+        ssize_t size = write(client_fd, conn.outbuf_view.data(), conn.outbuf_view.size());
+
+        if (size > 0) { // 写入成功，移动待写视图
+            conn.outbuf_view.remove_prefix(static_cast<size_t>(size));
+        } else if (errno == EWOULDBLOCK) { // 暂时不可写，等待下一次写事件
+            break;
+        } else { // 发生错误
+            // TODO: 引入日志
+            close_connect(client_fd);
+            return;
+        }
+    }
+
+    if (conn.outbuf_view.empty()) {
+        struct kevent event;
+        EV_SET(&event, client_fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+
+        if (kevent(kq, &event, 1, nullptr, 0, nullptr) == -1) {
+            close_connect(client_fd);
+        }
+    }
+}
+
+void io::write_back(int kq, int client_fd) {
+    auto it = connections.find(client_fd);
+    if (it == connections.end()) {
+        return;
+    }
+
+    struct kevent event;
+    EV_SET(&event, client_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+
+    if (kevent(kq, &event, 1, nullptr, 0, nullptr) == -1) {
+        close_connect(client_fd);
+    }
+}
+
 } // namespace xkv
 
 #endif

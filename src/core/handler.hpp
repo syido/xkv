@@ -12,7 +12,11 @@ class handler {
     store main_store;
 
   public:
+    // 解析请求并处理
     std::pair<app_result, std::string> handle(const std::string &request);
+
+    // 从响应中返回字符串
+    static std::string make_response(app_result result, std::string value);
 };
 
 } // namespace xkv

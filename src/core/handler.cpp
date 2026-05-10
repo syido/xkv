@@ -125,3 +125,20 @@ auto handler::handle(const string &request) -> pair<app_result, string> {
         return prase_fail;
     }
 }
+
+string handler::make_response(app_result code, string str) {
+    static const string Spliter = "\r", Ender = Spliter;
+    string size = std::to_string(str.size());
+
+    string buf;
+    buf.reserve(2 + Spliter.size() + size.size() + str.size() + Spliter.size() + Ender.size());
+
+    buf.append(to_string(code));
+    buf.append(Spliter);
+    buf.append(size);
+    buf.append(str);
+    buf.append(Spliter);
+    buf.append(Ender);
+
+    return buf;
+}
