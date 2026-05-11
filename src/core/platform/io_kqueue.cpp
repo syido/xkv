@@ -24,11 +24,7 @@ static void set_non_blocking(int fd) {
     }
 }
 
-std::runtime_error io::io_error{"在IO时发生了错误"};
-
-io::io(int listen_fd, on_recv_func func) : listen_fd(listen_fd), on_recv(func) {}
-
-int io::create_listen(int port) {
+static int create_listen(int port) {
     // 创建 TCP socket，后续会转为监听 fd。
     int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_fd == -1) {

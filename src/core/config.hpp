@@ -7,6 +7,8 @@ namespace xkv {
 struct app_config {
     // 端口
     int port = 12463;
+    // IO缓冲对象池大小（Windows的IOCP在用）
+    size_t io_pool_size = 64;
 
     // 触发扩容的因子
     size_t rehash_fractor = 4;

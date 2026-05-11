@@ -4,6 +4,7 @@ main_test.cpp
 main_test
 
 *.dSYM
+vcpkg_installed
 
 !.clang-format
 !.gitignore

@@ -8,7 +8,7 @@
 using namespace xkv;
 using namespace std;
 
-connection::connection(int fd) : fd{fd} {}
+connection::connection(io_handle fd) : fd{fd} {}
 
 void connection::set_outbuf(string buf) {
     outbuf = std::move(buf);
@@ -20,5 +20,9 @@ void io::check_response(connection &conn) {
         conn.set_outbuf(string{static_cast<char>(app_result::loss_response) - '0'});
     }
 }
+
+std::runtime_error io::io_error{"在IO时发生了错误"};
+
+io::io(int port, on_recv_func func) : port(port), on_recv(func) {}
 
 // 其它跨平台实现放在platform/下
