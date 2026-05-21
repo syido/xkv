@@ -1,4 +1,4 @@
-#ifdef _POSIX_VERSION   // PosixAPI
+#if defined(__APPLE__) || defined(__linux__) // PosixAPI
 
 #include "../cli.hpp"
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <core/data/types.hpp>
-#include <core/init.hpp>
 #include <core/result.hpp>
+#include <core/config.hpp>
 
 #include <expected>
 #include <functional>
@@ -179,7 +179,7 @@ auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
         }
     }
 
-    return app_result::ok;
+    return changed ? app_result::updated : app_result::ok;
 }
 
 template <supported_type E>

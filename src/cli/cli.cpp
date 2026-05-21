@@ -1,9 +1,8 @@
 #include "cli.hpp"
-#include <core/init.hpp>
 #include <core/result.hpp>
+#include <core/config.hpp>
 
 #include <asio.hpp>
-#include <array>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -29,6 +28,8 @@ static pair<bool, string> prase_result(string_view result) {
     switch (res_code) {
     case app_result::ok:
         return {true, "成功"};
+    case app_result::updated:
+        return {true, "更新成功"};
     case app_result::out_of_memery:
         return {false, "内存不足"};
     case app_result::not_found:

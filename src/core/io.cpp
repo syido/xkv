@@ -17,7 +17,7 @@ void connection::set_outbuf(string buf) {
 
 void io::check_response(connection &conn) {
     if (conn.outbuf_view.empty()) {
-        conn.set_outbuf(string{static_cast<char>(app_result::loss_response) - '0'});
+        conn.set_outbuf(to_string(app_result::loss_response));
     }
 }
 

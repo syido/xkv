@@ -9,6 +9,7 @@
 namespace xkv {
 
 // IO句柄类型，在posix上表现为文件描述符fd
+// TODO: POSIX fd是int且以-1表示错误，后续平台抽象需要避免无符号句柄直接比较-1。
 using io_handle = unsigned long long;
 
 struct connection;
@@ -60,9 +61,8 @@ class io {
     // 启动循环
     void loop();
 
-  private:
     // 检查回复内容
-    void check_response(connection &conn);
+    static void check_response(connection &conn);
 };
 
 } // namespace xkv

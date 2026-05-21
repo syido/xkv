@@ -1,5 +1,4 @@
 #include "core/config.hpp"
-#include "core/init.hpp"
 #include <core/core.hpp>
 #include <cli/cli.hpp>
 #include <iostream>

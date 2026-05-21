@@ -1,5 +1,6 @@
 #include <core/handler.hpp>
 #include <core/io.hpp>
+#include <core/sync/aof.hpp>
 
 namespace xkv {
 
@@ -8,6 +9,7 @@ class core {
 
   private:
     handler handler;
+    aof aof;
 
   public:
     core(const core &) = delete;

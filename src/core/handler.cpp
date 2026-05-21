@@ -1,7 +1,7 @@
 #include "handler.hpp"
+#include "core/result.hpp"
 #include <string>
 #include <string_view>
-#include <utility>
 
 using namespace xkv;
 using namespace std;
@@ -11,9 +11,12 @@ constexpr static char op_set = 's';
 constexpr static char op_remove = 'r';
 constexpr static char op_cas = 'c';
 
-auto handler::handle(const string &request) -> pair<app_result, string> {
+auto handler::handle(const string &request) -> handler::result {
     string_view req = request;
-    pair<app_result, string> prase_fail = {app_result::parse_failed, string{}};
+    handler::result prase_fail = {
+        .code = app_result::parse_failed,
+        .response = string{}
+    };
 
     // 读一个字符串
     auto prase_string = [&req]() -> string {
@@ -81,13 +84,11 @@ auto handler::handle(const string &request) -> pair<app_result, string> {
 
         return {app_result::ok, res.value()};
     } else if (op == op_remove) {
-        auto res = main_store.remove(key);
         if (invalid_spliter()) {
             return prase_fail;
-        } else if (res != app_result::ok) {
-            return {res, string{}};
         } else {
-            return {app_result::ok, string{}};
+            auto res = main_store.remove(key);
+            return {res, string{}};
         }
     }
 
@@ -97,13 +98,11 @@ auto handler::handle(const string &request) -> pair<app_result, string> {
         return prase_fail;
     }
     if (op == op_set) {
-        auto res = main_store.set(key, value1);
         if (invalid_spliter()) {
             return prase_fail;
-        } else if (res != app_result::ok) {
-            return {res, string{}};
         } else {
-            return {app_result::ok, string{}};
+            auto res = main_store.set(key, value1);
+            return {res, string{}};
         }
     }
 
@@ -113,27 +112,26 @@ auto handler::handle(const string &request) -> pair<app_result, string> {
         return prase_fail;
     }
     if (op == op_cas) {
-        auto res = main_store.compare_and_set(key, value1, value2);
         if (invalid_spliter()) {
             return prase_fail;
-        } else if (res != app_result::ok) {
-            return {res, string{}};
         } else {
-            return {app_result::ok, string{}};
+            auto res = main_store.compare_and_set(key, value1, value2);
+            return {res, string{}};
         }
     } else {
         return prase_fail;
     }
 }
 
-string handler::make_response(app_result code, string str) {
+string handler::make_response(const handler::result &result) {
+    const string &str = result.response;
     static const string Spliter = "\r", Ender = Spliter;
     string size = std::to_string(str.size());
 
     string buf;
     buf.reserve(2 + Spliter.size() + size.size() + str.size() + Spliter.size() + Ender.size());
 
-    buf.append(to_string(code));
+    buf.append(to_string(result.code));
     buf.append(Spliter);
     buf.append(size);
     buf.append(str);
