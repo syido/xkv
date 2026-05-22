@@ -170,3 +170,20 @@ void cli::loop() {
         }
     }
 }
+
+static bool dump_default_conf_if_necessary(int argc, char **argv) {
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "template-config" || arg == "tc") {
+            app_config::dump(app_config{}, "./template_config.toml");
+            cout << "已导出配置文件模版";
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool xkv::cli::excute_other_task(int argc, char **argv) {
+    return dump_default_conf_if_necessary(argc, argv);
+}

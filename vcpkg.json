@@ -2,6 +2,7 @@
     "name": "xuvian-kv",
     "version-string": "0.1.0",
     "dependencies": [
-        "asio"
+        "asio",
+        { "name": "reflectcpp", "features": ["toml"] }
     ]
 }

@@ -2,13 +2,16 @@
 
 #include <cstddef>
 #include <ctime>
+#include <optional>
+#include <rfl/toml.hpp>
 #include <string>
 
 namespace xkv {
 
+// 应用运行时配置
 struct app_config {
     // 启用AOF（日志追加的持久化）
-    bool enable_aof = true;
+    bool enable_aof = false;
 
     // 端口
     int port = 12463;
@@ -26,8 +29,14 @@ struct app_config {
     size_t aof_buffer_size = 1024;
     // AOF刷入硬盘的时间间隔
     time_t aof_flush_time_sec = 1;
+
+    // 从文件中加载配置
+    static std::optional<app_config> load();
+    // 导出配置，发生错误就抛出
+    static void dump(app_config config, std::string file);
 };
 
+// 编译时配置
 struct static_config {
     // kevent数组的的尺寸
     static constexpr int kevent_size = 64;
@@ -36,6 +45,6 @@ struct static_config {
 };
 
 // 全局配置对象
-extern const app_config config;
+extern const app_config &config;
 
 }

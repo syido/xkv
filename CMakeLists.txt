@@ -20,16 +20,16 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp"
 )
 
-add_library(
-    ${XkvCore} STATIC
-    ${XkvCoreSource}
-)
+add_library(${XkvCore} STATIC ${XkvCoreSource})
 
 target_include_directories(
     ${XkvCore} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+find_package(reflectcpp CONFIG REQUIRED)
+target_link_libraries(${XkvCore} PRIVATE reflectcpp::reflectcpp)
 
 # 跨平台
 if(WIN32)
@@ -62,6 +62,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# Asio依赖库
 find_package(asio CONFIG REQUIRED)
 target_link_libraries(${XkvCli} PRIVATE asio::asio)
 
