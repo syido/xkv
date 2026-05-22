@@ -1,6 +1,6 @@
 #include "core.hpp"
-#include "core/config.hpp"
-#include "core/result.hpp"
+#include <core/config.hpp>
+#include <core/result.hpp>
 #include <core/io.hpp>
 
 #include <string>
@@ -10,6 +10,7 @@ using namespace std;
 namespace xkv {
 
 void core::loop() {
+    // 处理请求的回调函数
     auto handler_func = [this](io *io, connection &conn) -> void {
         auto res = handler.handle(conn.inbuf);
 
@@ -22,6 +23,14 @@ void core::loop() {
         conn.set_outbuf(buf);
     };
 
+    // 如果启用AOF，则加载旧的AOF文件
+    if (config.enable_aof) {
+        aof::load([this](const std::string &command) {
+            handler.handle(command);
+        });
+    }
+
+    // 开始IO主循环
     xkv::io{config.port, handler_func}.loop();
 }
 

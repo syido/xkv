@@ -20,8 +20,6 @@ struct app_config {
     // 哈希表中桶最大元素数
     size_t bucket_max = 16;
 
-    // 加载AOF
-    bool load_aof = true;
     // AOF文件路径
     std::string aof_file = "./data/log/";
     // AOF缓冲区大小

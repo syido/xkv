@@ -1,6 +1,8 @@
 #include <cstddef>
 #include <ctime>
 #include <fstream>
+#include <functional>
+#include <string>
 #include <string_view>
 
 namespace xkv {
@@ -24,6 +26,9 @@ class aof {
 
     // 追加命令
     void append(std::string_view command);
+
+    // 加载旧的AOF
+    static void load(std::function<void(const std::string &)> handler);
 };
 
 } // namespace xkv
