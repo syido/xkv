@@ -1,7 +1,7 @@
 #include "core.hpp"
-#include <core/config.hpp>
-#include <core/result.hpp>
 #include <core/io.hpp>
+#include <shared/config.hpp>
+#include <shared/result.hpp>
 
 #include <string>
 
@@ -9,14 +9,20 @@ using namespace std;
 
 namespace xkv {
 
+core::core() {
+    if (config.enable_aof) {
+        aof.emplace();
+    }
+}
+
 void core::loop() {
     // 处理请求的回调函数
     auto handler_func = [this](io *io, connection &conn) -> void {
         auto res = handler.handle(conn.inbuf);
 
         // 如果命令引起数据变化，则将命令写入aof文件
-        if (is_updated(res.code)) {
-            aof.append(conn.inbuf);
+        if (is_updated(res.code) && config.enable_aof) {
+            aof.value().append(conn.inbuf);
         }
 
         auto buf = handler.make_response(res);

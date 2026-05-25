@@ -3,8 +3,9 @@
 #include <cstddef>
 #include <ctime>
 #include <optional>
-#include <rfl/toml.hpp>
 #include <string>
+
+#include <rfl/toml.hpp>
 
 namespace xkv {
 
@@ -47,4 +48,4 @@ struct static_config {
 // 全局配置对象
 extern const app_config &config;
 
-}
+} // namespace xkv

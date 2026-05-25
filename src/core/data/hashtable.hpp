@@ -1,8 +1,8 @@
 #pragma once
 
 #include <core/data/types.hpp>
-#include <core/result.hpp>
-#include <core/config.hpp>
+#include <shared/config.hpp>
+#include <shared/result.hpp>
 
 #include <expected>
 #include <functional>

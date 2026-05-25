@@ -1,5 +1,6 @@
 #include "handler.hpp"
-#include "core/result.hpp"
+#include "shared/result.hpp"
+
 #include <string>
 #include <string_view>
 
@@ -15,7 +16,7 @@ auto handler::handle(const string &request) -> handler::result {
     string_view req = request;
     handler::result prase_fail = {
         .code = app_result::parse_failed,
-        .response = string{}
+        .response = string{},
     };
 
     // 读一个字符串

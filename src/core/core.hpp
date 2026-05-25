@@ -2,6 +2,8 @@
 #include <core/io.hpp>
 #include <core/sync/aof.hpp>
 
+#include <optional>
+
 namespace xkv {
 
 // 核心循环
@@ -9,11 +11,11 @@ class core {
 
   private:
     handler handler;
-    aof aof;
+    std::optional<aof> aof;
 
   public:
     core(const core &) = delete;
-    core() = default;
+    explicit core();
 
     // 启动主循环
     void loop();

@@ -1,7 +1,7 @@
 #ifdef _WIN32 // win
 
 #include "../io.hpp"
-#include <core/config.hpp>
+#include <shared/config.hpp>
 #include <core/init.hpp>
 
 #include <array>

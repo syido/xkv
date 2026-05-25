@@ -12,7 +12,27 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 
-# 测试入口: xkv_core
+# 共享: xkv_shared
+set(XkvShared "xkv_shared")
+file(
+    GLOB_RECURSE XkvSharedSource
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/shared/*.cpp"
+)
+
+add_library(${XkvShared} OBJECT ${XkvSharedSource})
+
+target_include_directories(
+    ${XkvShared} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+find_package(reflectcpp CONFIG REQUIRED)
+target_link_libraries(${XkvShared} PUBLIC reflectcpp::reflectcpp)
+
+
+# 服务器: xkv_core
 set(XkvCore "xkv_core")
 file(
     GLOB_RECURSE XkvCoreSource
@@ -20,7 +40,7 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp"
 )
 
-add_library(${XkvCore} STATIC ${XkvCoreSource})
+add_library(${XkvCore} STATIC ${XkvCoreSource} $<TARGET_OBJECTS:${XkvShared}>)
 
 target_include_directories(
     ${XkvCore} PUBLIC
@@ -28,8 +48,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-find_package(reflectcpp CONFIG REQUIRED)
-target_link_libraries(${XkvCore} PRIVATE reflectcpp::reflectcpp)
+target_link_libraries(${XkvCore} PUBLIC ${XkvShared})
 
 # 跨平台
 if(WIN32)
@@ -70,4 +89,35 @@ set_target_properties(
     ${XkvCli} PROPERTIES
     PREFIX ""
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
+)
+
+
+# 测试器依赖: xkv_test
+set(XkvTest "xkv_test")
+file(
+    GLOB_RECURSE XkvTestSource
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/test/*.cpp"
+)
+list(REMOVE_ITEM XkvTestSource "${CMAKE_CURRENT_SOURCE_DIR}/src/test/benchmark/session.cpp")
+
+add_library(
+    ${XkvTest} STATIC
+    ${XkvTestSource}
+)
+
+target_include_directories(
+    ${XkvTest} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(${XkvTest} PUBLIC reflectcpp::reflectcpp asio::asio)
+
+set_target_properties(
+    ${XkvTest} PROPERTIES
+    PREFIX ""
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
 )

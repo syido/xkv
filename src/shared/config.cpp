@@ -1,6 +1,7 @@
 #include "config.hpp"
 
 #include <optional>
+
 #include <rfl/toml/load.hpp>
 #include <rfl/toml/save.hpp>
 #include <rfl/toml/write.hpp>
@@ -9,7 +10,7 @@ using namespace xkv;
 using namespace std;
 
 app_config _config;
-const app_config& xkv::config = _config;
+const app_config &xkv::config = _config;
 
 optional<app_config> app_config::load() {
     if (!filesystem::exists("config.toml")) {

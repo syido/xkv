@@ -1,6 +1,6 @@
 #include "cli.hpp"
-#include <core/result.hpp>
-#include <core/config.hpp>
+#include <shared/config.hpp>
+#include <shared/result.hpp>
 
 #include <asio.hpp>
 #include <iostream>
@@ -158,7 +158,6 @@ void cli::start_input() {
 
         cout << "> " << flush;
     }
-
 }
 
 void cli::loop() {

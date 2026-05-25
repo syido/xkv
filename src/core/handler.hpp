@@ -1,6 +1,7 @@
 #include <core/data/hashtable.hpp>
-#include <core/result.hpp>
 #include <core/store.hpp>
+#include <shared/result.hpp>
+
 #include <string>
 
 namespace xkv {

@@ -8,11 +8,11 @@ namespace xkv {
 enum class app_result : int {
 
     // 成功类型
-    ok = 0,     // 成功执行
-    updated,    // 成功更改
-    
+    ok = 0,  // 成功执行
+    updated, // 成功更改
+
     // 占位
-    _2, _3, _4, _5, _6, _7, _8, _9, 
+    _9 = 9,
 
     // 错误类型
     out_of_memery, // 内存不足
@@ -21,7 +21,7 @@ enum class app_result : int {
     parse_failed,  // 解析错误
     loss_response, // 响应丢失
 
-    unkown = 99,   // 仅用于错误码识别错误的未知错误类型，不会在核心业务中出现
+    unkown = 99, // 仅用于错误码识别错误的未知错误类型，不会在核心业务中出现
 
     // 上限限制
     _max_limit

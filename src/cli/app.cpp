@@ -1,6 +1,7 @@
-#include "core/config.hpp"
-#include <core/core.hpp>
+#include "shared/config.hpp"
 #include <cli/cli.hpp>
+#include <core/core.hpp>
+
 #include <iostream>
 
 using namespace xkv;
@@ -15,7 +16,7 @@ int main(int argc, char **argv) {
     // 加载配置文件
     auto conf = app_config::load();
     if (conf) {
-        const_cast<app_config&>(config) = conf.value();
+        const_cast<app_config &>(config) = conf.value();
     }
 
     // 创建cli进程或core进程

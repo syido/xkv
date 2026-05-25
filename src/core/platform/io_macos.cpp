@@ -1,7 +1,7 @@
 #ifdef __APPLE__ // macos
 
 #include "../io.hpp"
-#include <core/config.hpp>
+#include <shared/config.hpp>
 
 #include <array>
 #include <cerrno>
@@ -104,7 +104,8 @@ static void create_connect(connection_map &conns, io_handle listen_fd, int kq) {
     }
 }
 
-static void read_connect(connection_map &conns, io_handle listen_fd, io_handle client_fd, int kq, auto &on_recv, io* io) {
+static void read_connect(connection_map &conns, io_handle listen_fd, io_handle client_fd, int kq,
+                         auto &on_recv, io *io) {
     auto it = conns.find(client_fd);
     if (it == conns.end()) { // 找不到连接
         return;

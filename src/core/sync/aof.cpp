@@ -1,6 +1,6 @@
 #include "aof.hpp"
-#include <core/config.hpp>
 #include <core/utils/time.hpp>
+#include <shared/config.hpp>
 
 #include <cstddef>
 #include <exception>
