@@ -1,2 +1,7 @@
 CompileFlags:
   CompilationDatabase: ./build/cmake
+---
+If:
+  PathMatch: .*(^|/)(vcpkg_installed|build/cmake/vcpkg_installed)/.*
+Diagnostics:
+  Suppress: "*"

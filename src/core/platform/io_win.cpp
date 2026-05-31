@@ -2,7 +2,6 @@
 
 #include "../io.hpp"
 #include <shared/config.hpp>
-#include <core/init.hpp>
 
 #include <array>
 #include <cstddef>

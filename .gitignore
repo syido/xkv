@@ -1,8 +1,7 @@
 /build
 /data
 
-/main_test.cpp
-/main_test
+/main_test*
 
 *.dSYM
 vcpkg_installed

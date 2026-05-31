@@ -1,8 +1,9 @@
 #pragma once
 
 #include <atomic>
+#include <exception>
+#include <mutex>
 #include <string>
-#include <sys/types.h>
 #include <vector>
 
 namespace xkvt::benchmark {
@@ -32,14 +33,20 @@ struct config {
     std::string port = "12463";     // 服务器端口
 };
 
+struct shared_state {
+    std::atomic_uint task_count = 0; // 任务计数
+    std::mutex error_lock;           // 错误锁
+    std::exception_ptr error;        // 当前任务遇到的第一个错误
+};
+
 // 基准测试
 class benchmark {
 
   private:
-    std::atomic_uint count = 0; // 任务计数
-
     config conf;                   // 基准测试配置
     std::vector<command> commands; // 本次测试命令
+
+    shared_state state; // 共享状态
 
   public:
     benchmark(config conf, std::vector<command> commands);

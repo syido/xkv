@@ -16,7 +16,7 @@ auto handler::handle(const string &request) -> handler::result {
     string_view req = request;
     handler::result prase_fail = {
         .code = app_result::parse_failed,
-        .response = string{},
+        .response = string_view{},
     };
 
     // 读一个字符串
@@ -80,16 +80,16 @@ auto handler::handle(const string &request) -> handler::result {
         }
 
         if (!res) {
-            return {res.error(), string{}};
+            return {res.error(), };
         }
 
-        return {app_result::ok, res.value()};
+        return {app_result::ok, string_view{res.value()}};
     } else if (op == op_remove) {
         if (invalid_spliter()) {
             return prase_fail;
         } else {
             auto res = main_store.remove(key);
-            return {res, string{}};
+            return {res, };
         }
     }
 
@@ -103,7 +103,7 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else {
             auto res = main_store.set(key, value1);
-            return {res, string{}};
+            return {res, };
         }
     }
 
@@ -117,7 +117,7 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else {
             auto res = main_store.compare_and_set(key, value1, value2);
-            return {res, string{}};
+            return {res, };
         }
     } else {
         return prase_fail;
@@ -125,7 +125,7 @@ auto handler::handle(const string &request) -> handler::result {
 }
 
 string handler::make_response(const handler::result &result) {
-    const string &str = result.response;
+    auto str = result.response;
     static const string Spliter = "\r", Ender = Spliter;
     string size = std::to_string(str.size());
 

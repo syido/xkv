@@ -3,6 +3,7 @@
 #include <shared/result.hpp>
 
 #include <string>
+#include <string_view>
 
 namespace xkv {
 
@@ -14,7 +15,7 @@ class handler {
   public:
     struct result {
         app_result code;
-        std::string response;
+        std::string_view response;
     };
 
   public:

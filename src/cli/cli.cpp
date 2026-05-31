@@ -62,7 +62,7 @@ static string make_request(const string &line) {
     }
 
     string request;
-    request.push_back(tokens[0].front());
+    request.append(tokens[0]);
     request.push_back('\r');
 
     for (size_t i = 1; i < tokens.size(); i++) {

@@ -7,6 +7,7 @@
 #include <expected>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <sys/types.h>
 #include <tuple>
 #include <utility>
@@ -14,8 +15,8 @@
 
 namespace xkv {
 
-// 哈希表类（支持string为key，string或int为value）
-template <supported_type E>
+// 哈希表类
+template <typename E>
 class hashtable {
 
   private:
@@ -31,15 +32,15 @@ class hashtable {
     std::vector<bucket_type *> table;             // 桶表
 
     // 获取元素所在桶、迭代器与用之模的幂（提供给get和remove），并决定找不到是创建还是返回错误（提供给set）
-    std::expected<std::tuple<bucket_type &, bucket_iterator>, app_result>
-    find(const std::string &key, bool throw_not_found = true);
+    std::expected<std::tuple<bucket_type &, bucket_iterator>, app_result> find(std::string_view key,
+                                                                               bool throw_not_found = true);
     // 判断桶是否超载
     bool is_big_to_rehash(const bucket_type &bucket) const;
     // 检查或渐进式重构哈希表，参数代表关联操作是否有对哈希表改动
     app_result check_rehash(bool changed = true, bool too_big = false);
 
     // 获取字符串的哈希值
-    size_t get_hash(const std::string &key) const;
+    size_t get_hash(std::string_view key) const;
     // 获取哈希值模数
     size_t get_expr_mod(size_t key, size_t expr) const;
 
@@ -50,18 +51,18 @@ class hashtable {
     ~hashtable();
 
     // 查询元素
-    std::expected<E, app_result> get(const std::string &key);
+    std::expected<const E *, app_result> get(std::string_view key);
     // 插入元素
-    app_result set(const std::string &key, E value);
+    app_result set(std::string_view key, E value);
     // 删除元素
-    app_result remove(const std::string &key);
+    app_result remove(std::string_view key);
 
     // 不在rehash的过程中的常量
     static const int NOT_REHASHING = -2;
 };
 
-template <supported_type E>
-auto hashtable<E>::find(const std::string &key, bool create_if_not_found)
+template <typename E>
+auto hashtable<E>::find(std::string_view key, bool create_if_not_found)
     -> std::expected<std::tuple<bucket_type &, bucket_iterator>, app_result> {
 
     // 注：我们决定新插入数据不总是插入新桶，而是按照rehash进度决定插入哪个桶
@@ -85,7 +86,7 @@ auto hashtable<E>::find(const std::string &key, bool create_if_not_found)
     if (table[mod] != nullptr) {
         auto &vec = *table[mod];
         for (auto it = vec.begin(); it != vec.end(); ++it) {
-            if (it->first == key) {
+            if (std::string_view{it->first} == key) {
                 return std::tuple<bucket_type &, bucket_iterator>{vec, it};
             }
         }
@@ -103,27 +104,27 @@ auto hashtable<E>::find(const std::string &key, bool create_if_not_found)
     }
 }
 
-template <supported_type E>
+template <typename E>
 auto hashtable<E>::is_big_to_rehash(const bucket_type &bucket) const -> bool {
     return bucket.size() > config.bucket_max;
 }
 
-template <supported_type E>
-auto hashtable<E>::get_hash(const std::string &key) const -> size_t {
-    return std::hash<std::string>{}(key);
+template <typename E>
+auto hashtable<E>::get_hash(std::string_view key) const -> size_t {
+    return std::hash<std::string_view>{}(key);
 }
 
-template <supported_type E>
+template <typename E>
 auto hashtable<E>::get_expr_mod(size_t key, size_t expr) const -> size_t {
     return key & ((1 << expr) - 1);
 }
 
-template <supported_type E>
+template <typename E>
 hashtable<E>::hashtable() : table(1 << old_size_expr) {
     /* 构造 */
 }
 
-template <supported_type E>
+template <typename E>
 hashtable<E>::~hashtable() {
     for (bucket_type *&vec : table) {
         if (vec != nullptr) {
@@ -133,7 +134,7 @@ hashtable<E>::~hashtable() {
 }
 
 // TODO: 没有处理扩容失败、没有处理缩容
-template <supported_type E>
+template <typename E>
 auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
     if (rehash_process == NOT_REHASHING) { // 仅当不在rehash中时才处理
         if (changed) {
@@ -182,19 +183,19 @@ auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
     return changed ? app_result::updated : app_result::ok;
 }
 
-template <supported_type E>
-auto hashtable<E>::get(const std::string &key) -> std::expected<E, app_result> {
+template <typename E>
+auto hashtable<E>::get(std::string_view key) -> std::expected<const E *, app_result> {
     auto const &res = find(key, false);
     if (!res.has_value()) {
-        return std::unexpected(res.error());
+        return std::unexpected{res.error()};
     } else {
-        return std::get<1>(res.value())->second;
+        return &std::get<1>(res.value())->second;
     }
 }
 
 // TODO: 没写扩容错误
-template <supported_type E>
-auto hashtable<E>::set(const std::string &key, E value) -> app_result {
+template <typename E>
+auto hashtable<E>::set(std::string_view key, E value) -> app_result {
     // 注：我们决定新插入数据不总是插入新桶，而是按照rehash进度决定插入哪个桶
 
     auto res = find(key, true);
@@ -206,15 +207,15 @@ auto hashtable<E>::set(const std::string &key, E value) -> app_result {
     if (it != vec.end()) {             // 找到元素
         it->second = std::move(value); // 替换元素
     } else {
-        vec.emplace_back(key, std::move(value));
+        vec.emplace_back(std::string{key}, std::move(value));
         ++size;
     }
 
     return check_rehash(true, is_big_to_rehash(vec));
 }
 
-template <supported_type E>
-auto hashtable<E>::remove(const std::string &key) -> app_result {
+template <typename E>
+auto hashtable<E>::remove(std::string_view key) -> app_result {
     auto res = find(key, false);
     if (!res.has_value()) {
         return res.error();

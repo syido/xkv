@@ -27,7 +27,7 @@ bool cli::create_process_if_necessary(int argc, char **argv) {
 
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
-        if (arg == "--cli" || arg == '-c') {
+        if (arg == "--cli" || arg == "-c") {
             cli{}.loop();
             return false;
         }
