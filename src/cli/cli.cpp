@@ -175,7 +175,7 @@ static bool dump_default_conf_if_necessary(int argc, char **argv) {
         string arg = argv[i];
         if (arg == "template-config" || arg == "tc") {
             app_config::dump(app_config{}, "./template_config.toml");
-            cout << "已导出配置文件模版";
+            cout << "已导出配置文件模版" << endl;
             return true;
         }
     }

@@ -43,7 +43,7 @@ struct meta {
 class xdata : noncopyable {
 
   protected:
-    meta meta;
+    xkv::meta meta;
 
   public:
     xdata(xkv::meta meta) : meta{meta} {}
@@ -75,7 +75,7 @@ struct xstring : xdata {
 
   public:
     // 使用压缩字符串的标记
-    inline static extra_t XSTR_FLAG = 0x0100;
+    inline static extra_t NOT_XSTR_FLAG = 0x0100;
     // 压缩字符串最大长度
     inline static size_t XSTR_MAX_LEN = sizeof(std::string) / sizeof(char) - 1;
 };

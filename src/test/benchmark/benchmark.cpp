@@ -23,7 +23,7 @@ benchmark::benchmark(config conf, vector<command> commands) : conf(conf), comman
 void benchmark::run() {
     asio::io_context probe_context;
     asio::ip::tcp::resolver resolver{probe_context};
-    auto resolved = resolver.resolve(conf.host, conf.port);
+    auto resolved = resolver.resolve(asio::ip::tcp::v4(), conf.host, conf.port);
     asio::ip::tcp::endpoint endpoint = resolved.begin()->endpoint();
     probe_connect(endpoint);
 

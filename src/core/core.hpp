@@ -10,8 +10,8 @@ namespace xkv {
 class core {
 
   private:
-    handler handler;
-    std::optional<aof> aof;
+    xkv::handler handler;
+    std::optional<xkv::aof> aof;
 
   public:
     core(const core &) = delete;

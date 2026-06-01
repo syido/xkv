@@ -13,9 +13,9 @@
   - 客户端
 - 数据结构
   - 哈希表与其渐进式rehash
-  - TTL的存储
+  - TTL的存储与短字符串压缩优化
 - 网络模型
-  - IO多路复用的`kqueue`和异步IO的`iocp`（未完善）
+  - IO多路复用的`epoll`、`kqueue`与异步IO的`iocp`
   - 简化版的应用层协议
 - 读取配置文件
 - 持久化
@@ -31,8 +31,6 @@
   - 二进制持久化<del>XDB</del>
 - 日志输出与性能窗口
 - 订阅事件
-- 网络模型
-  - IO多路复用的`epoll`版本
 - 数据结构
   - 使用第三方内存分配器
   - 哈希表的缩容
@@ -43,12 +41,23 @@
 虽然本项目似乎不太有使用的需要，但若你只是想体验一下或仅出于好玩（因为笔者也很喜欢捣鼓），可以编译`xkv_cli`可执行文件目标并运行，部分配置项希望在编译前就已编码。
 
 目前仅支持一个哈希表与set、get、remove和cas操作，命令如下请求如下：
+
 ```
 s key value
 g key
 c key value new_value
 ```
+
+### 命令
+
+- `tc`、`template-config`
+
+  获取配置文件的模版
+
+### 编码协议
+
 s、g、r、c为操作选项，除此之外每个字符串开头需要设置长度，并用`\r`分隔，命令结尾`\r\r`结束，若想通过socket访问，则需要编码成这样：
+
 ```
 s\r3key\r5value\r\r
 ```
@@ -70,7 +79,7 @@ using namespace xkvt::benchmark;
 int main() {
     config conf;
     commands cmds = {
-        command{.op = operation::set, .size = 10000000, .min_len = 10, .max_len = 20},
+        command{.op = operation::set, .size = 1000000, .min_len = 100, .max_len = 200},
         command{.op = operation::get, .size = 10000000, .min_len = 10, .max_len = 20}
     };
 

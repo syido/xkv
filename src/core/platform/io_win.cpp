@@ -49,7 +49,8 @@ struct operation_pool {
 
     operation *acquire(io_op type, SOCKET socket) {
         if (free_list.empty()) {
-            throw io::io_error;
+            static runtime_error error{"IO操作池已耗尽"};
+            throw error;
         }
 
         operation *op = free_list.back();
@@ -147,7 +148,8 @@ static void create_connect(operation_pool &pool, SOCKET listen_socket, LPFN_ACCE
     if (!ok && WSAGetLastError() != ERROR_IO_PENDING) {
         closesocket(op->socket);
         pool.release(op);
-        throw io::io_error;
+        static runtime_error error{"投递AcceptEx失败"};
+        throw error;
     }
 }
 

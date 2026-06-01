@@ -26,11 +26,11 @@ uint48_t::operator uint64_t() const {
 xstring::xstring(string_view str, ttl_t ttl) : xdata{xkv::meta{ttl}} {
     meta.ttl = ttl;
     if (str.size() <= XSTR_MAX_LEN) {
-        meta.extra |= xstring::XSTR_FLAG;
         meta.extra |= static_cast<extra_t>(str.size());
         std::memcpy(xstr.data(), str.data(), str.size());
         xstr[str.size()] = '\0';
     } else {
+        meta.extra |= xstring::NOT_XSTR_FLAG;
         new (&this->str) string{str};
     }
 }
@@ -60,7 +60,7 @@ xstring::operator string() const {
 }
 
 bool xstring::is_xstr() const {
-    return meta.extra & xstring::XSTR_FLAG;
+    return !(meta.extra & xstring::NOT_XSTR_FLAG);
 }
 
 size_t xstring::size() const {
