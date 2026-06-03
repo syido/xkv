@@ -1,9 +1,9 @@
 #include <test/benchmark/benchmark.hpp>
+#include <test/shared/utils.hpp>
 
 #include <array>
 #include <exception>
 #include <memory>
-#include <random>
 #include <string>
 #include <system_error>
 
@@ -117,38 +117,9 @@ class session : public enable_shared_from_this<session> {
 };
 
 static void append_random_field(string &request, ushort min_len, ushort max_len) {
-    static constexpr size_t pool_size = 16 * 1024 * 1024;
-    static const string pool = [] {
-        mt19937 generator{random_device{}()};
-        uniform_int_distribution<int> dist(0, 255);
-
-        string result;
-        result.resize(pool_size);
-        for (char &ch : result) {
-            ch = static_cast<char>(dist(generator));
-        }
-
-        return result;
-    }();
-
-    static atomic_size_t offset_cursor = 0;
-    static atomic_size_t len_cursor = pool_size - 1;
-
-    size_t len_range = static_cast<size_t>(max_len - min_len + 1);
-    size_t len_index = len_cursor.fetch_sub(1, memory_order_relaxed) % pool.size();
-    size_t len = static_cast<size_t>(min_len) + static_cast<unsigned char>(pool[len_index]) % len_range;
-
-    request.append(to_string(len));
-
-    size_t offset = offset_cursor.fetch_add(100, memory_order_relaxed) % pool.size();
-    if (offset + len <= pool.size()) {
-        request.append(pool.data() + offset, len);
-        return;
-    }
-
-    size_t first_part = pool.size() - offset;
-    request.append(pool.data() + offset, first_part);
-    request.append(pool.data(), len - first_part);
+    string field = xkvt::get_random_str(min_len, max_len);
+    request.append(to_string(field.size()));
+    request.append(field);
 }
 
 static void make_request(const command &cmd, string &request) {

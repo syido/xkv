@@ -5,8 +5,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <string>
-#include <string_view>
 
 namespace xkv {
 
@@ -16,7 +14,7 @@ struct uint48_t {
 
     // 从uint_64得到
     explicit uint48_t(uint64_t val);
-    explicit operator uint64_t() const;
+    operator uint64_t() const;
 };
 
 // 应用内的时间类型
@@ -47,37 +45,28 @@ class xdata : noncopyable {
 
   public:
     xdata(xkv::meta meta) : meta{meta} {}
+
+    // 获得占用字节数
+    virtual size_t get_capacity() const = 0;
+    // 获得过期时间
+    ttl_t get_ttl() const;
 };
 
-// 作为xkv的字符串，对于小于string的字符串进行压缩
-struct xstring : xdata {
+// 容器类
+class xcontainer {
 
-  private:
-    union {
-        std::string str;                            // std::string
-        std::array<char, sizeof(std::string)> xstr; // 压缩字符串
-    };
+  protected:
+    size_t size = 0;     // 存放的元素数量
+    size_t capacity = 0; // 容器的容量（字节）
 
   public:
-    // 从只读字符串中构造
-    explicit xstring(std::string_view str, ttl_t ttl = TTL_MAX);
-    xstring(xstring &&);
-    xstring &operator=(xstring &&);
-    // 判断是否需要析构
-    ~xstring();
-    operator std::string() const;
-    operator std::string_view() const;
+    size_t get_size() const {
+        return size;
+    }
 
-    // 是否使用压缩字符串
-    bool is_xstr() const;
-    // 字符串长度
-    size_t size() const;
-
-  public:
-    // 使用压缩字符串的标记
-    inline static extra_t NOT_XSTR_FLAG = 0x0100;
-    // 压缩字符串最大长度
-    inline static size_t XSTR_MAX_LEN = sizeof(std::string) / sizeof(char) - 1;
+    size_t get_capacity() const {
+        return capacity;
+    }
 };
 
 } // namespace xkv

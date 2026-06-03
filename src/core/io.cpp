@@ -15,6 +15,10 @@ void connection::set_outbuf(string buf) {
     outbuf_view = string_view{outbuf};
 }
 
+void connection::reset() {
+    inbuf.clear();
+}
+
 void io::check_response(connection &conn) {
     if (conn.outbuf_view.empty()) {
         conn.set_outbuf(to_string(app_result::loss_response));

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <concepts>
 #include <cstddef>
+#include <type_traits>
 
 namespace xkv {
 
-struct xstring; // 预定义
+struct xdata; // 预定义
 
 // 当前仅支持string
 template <typename E>
-concept supported_type = std::same_as<E, xstring>;
+concept supported_type = std::is_base_of_v<xdata, E>;
 
 struct noncopyable {
   protected:

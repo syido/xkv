@@ -35,6 +35,8 @@ struct connection {
 
     // 对outbuf赋值
     void set_outbuf(std::string buf);
+    // 重置缓存区
+    void reset();
 };
 
 class io;

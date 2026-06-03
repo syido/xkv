@@ -9,6 +9,10 @@
 
 namespace xkv {
 
+constexpr size_t KB = 1024;
+constexpr size_t MB = 1024 * KB;
+constexpr size_t GB = 1024 * MB;
+
 // 应用运行时配置
 struct app_config {
     // 启用AOF（日志追加的持久化）
@@ -18,6 +22,9 @@ struct app_config {
     int port = 12463;
     // IO缓冲对象池大小（Windows的IOCP在用）
     size_t io_pool_size = 64;
+
+    // 服务器最大占用内存（占用会比实际偏大，请预留一定空间）
+    size_t capacity_max = 4 * GB;
 
     // 触发扩容的因子
     size_t rehash_fractor = 4;
@@ -45,7 +52,28 @@ struct static_config {
     static constexpr size_t buffer_size = 4096;
 };
 
+inline std::optional<app_config> app_config::load() {
+    if (!std::filesystem::exists("config.toml")) {
+        return std::nullopt;
+    }
+
+    auto conf = rfl::toml::load<app_config>("config.toml");
+    if (!conf.has_value()) {
+        throw std::runtime_error(conf.error().what());
+    }
+
+    return conf.value();
+}
+
+inline void app_config::dump(app_config config, std::string file) {
+    auto res = rfl::toml::save(file, config);
+    if (!res.has_value()) {
+        throw std::runtime_error(res.error().what());
+    }
+}
+
 // 全局配置对象
-extern const app_config &config;
+inline app_config _config;
+inline const app_config &config = _config;
 
 } // namespace xkv

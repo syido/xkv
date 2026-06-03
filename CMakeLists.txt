@@ -12,7 +12,7 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 
-# 共享: xkv_shared
+# 纯头文件接口: xkv_shared
 set(XkvShared "xkv_shared")
 file(
     GLOB_RECURSE XkvSharedSource
@@ -20,16 +20,16 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/shared/*.cpp"
 )
 
-add_library(${XkvShared} OBJECT ${XkvSharedSource})
+add_library(${XkvShared} INTERFACE)
 
 target_include_directories(
-    ${XkvShared} PUBLIC
+    ${XkvShared} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 find_package(reflectcpp CONFIG REQUIRED)
-target_link_libraries(${XkvShared} PUBLIC reflectcpp::reflectcpp)
+target_link_libraries(${XkvShared} INTERFACE reflectcpp::reflectcpp)
 
 
 # 服务器: xkv_core
@@ -40,7 +40,7 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp"
 )
 
-add_library(${XkvCore} STATIC ${XkvCoreSource} $<TARGET_OBJECTS:${XkvShared}>)
+add_library(${XkvCore} STATIC ${XkvCoreSource})
 
 target_include_directories(
     ${XkvCore} PUBLIC

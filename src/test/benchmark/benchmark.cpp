@@ -1,4 +1,5 @@
 #include "benchmark.hpp"
+#include <test/benchmark/session.cpp>
 
 #include <chrono>
 #include <iostream>
@@ -10,8 +11,6 @@
 
 using namespace xkvt::benchmark;
 using namespace std;
-
-#include "session.cpp"
 
 // 返回操作类型的输出名称
 static string_view operation_name(operation op);

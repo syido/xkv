@@ -11,4 +11,4 @@ vcpkg_installed
 .DS_Store
 .vscode
 
-notsync*
+ns*

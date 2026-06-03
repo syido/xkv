@@ -7,7 +7,7 @@ namespace xkv {
 // 应用的结果类型
 enum class app_result : int {
 
-    // 成功类型
+    // 成功类型，判断是否引起更改的结果将用于判断是否需要AOF
     ok = 0,  // 成功执行
     updated, // 成功更改
 
@@ -39,6 +39,12 @@ inline bool is_updated(app_result result) {
 
 static_assert(int(app_result::_max_limit) <= 100, "错误码应为两位数");
 
-extern std::string to_string(app_result code);
+inline std::string to_string(app_result code) {
+    int value = static_cast<int>(code);
+    return std::string{
+        static_cast<char>('0' + value / 10),
+        static_cast<char>('0' + value % 10),
+    };
+}
 
 } // namespace xkv

@@ -1,5 +1,5 @@
 #include "handler.hpp"
-#include "shared/result.hpp"
+#include <shared/result.hpp>
 
 #include <string>
 #include <string_view>
@@ -11,6 +11,7 @@ constexpr static char op_get = 'g';
 constexpr static char op_set = 's';
 constexpr static char op_remove = 'r';
 constexpr static char op_cas = 'c';
+constexpr static char op_info = 'i';
 
 auto handler::handle(const string &request) -> handler::result {
     string_view req = request;
@@ -66,6 +67,15 @@ auto handler::handle(const string &request) -> handler::result {
         return prase_fail;
     }
 
+    // INFO不需要参数
+    if (op == op_info) {
+        if (invalid_spliter()) {
+            return prase_fail;
+        } else {
+            return {app_result::ok, main_store.info()};
+        }
+    }
+
     // 读取key
     string key = prase_string();
     if (invalid_spliter()) {
@@ -80,7 +90,9 @@ auto handler::handle(const string &request) -> handler::result {
         }
 
         if (!res) {
-            return {res.error(), };
+            return {
+                res.error(),
+            };
         }
 
         return {app_result::ok, string_view{res.value()}};
@@ -89,7 +101,9 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else {
             auto res = main_store.remove(key);
-            return {res, };
+            return {
+                res,
+            };
         }
     }
 
@@ -103,7 +117,9 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else {
             auto res = main_store.set(key, value1);
-            return {res, };
+            return {
+                res,
+            };
         }
     }
 
@@ -117,7 +133,9 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else {
             auto res = main_store.compare_and_set(key, value1, value2);
-            return {res, };
+            return {
+                res,
+            };
         }
     } else {
         return prase_fail;

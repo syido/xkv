@@ -27,6 +27,7 @@ void core::loop() {
 
         auto buf = handler.make_response(res);
         conn.set_outbuf(buf);
+        conn.reset();
     };
 
     // 如果启用AOF，则加载旧的AOF文件
