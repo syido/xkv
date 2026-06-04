@@ -1,10 +1,12 @@
 #include "benchmark.hpp"
 #include <test/benchmark/session.cpp>
 
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <thread>
 
 #include <asio.hpp>
@@ -12,10 +14,12 @@
 using namespace xkvt::benchmark;
 using namespace std;
 
-// 返回操作类型的输出名称
-static string_view operation_name(operation op);
+// 输出任务配置
+static void print_task(size_t task_index, const command &cmd);
 // 试探服务端连接
 static void probe_connect(asio::ip::tcp::endpoint endpoint);
+// 重置服务端状态
+static void send_reset(asio::ip::tcp::endpoint endpoint);
 
 benchmark::benchmark(config conf, vector<command> commands) : conf(conf), commands(commands) {}
 
@@ -28,13 +32,21 @@ void benchmark::run() {
 
     for (size_t task_index = 0; task_index < commands.size(); task_index++) {
         const command &cmd = commands[task_index];
+        if (op::total_count(cmd.ops) == 0) {
+            throw invalid_argument("非法的命令组合");
+        }
+
+        if (cmd.reset) {
+            send_reset(endpoint);
+        }
+
         state.task_count.store(cmd.size, memory_order_relaxed);
         {
             lock_guard lock{state.error_lock};
             state.error = nullptr;
         }
 
-        cout << "task" << task_index + 1 << ": " << operation_name(cmd.op) << ", " << cmd.size << '\n';
+        print_task(task_index, cmd);
 
         auto start = chrono::steady_clock::now();
 
@@ -72,8 +84,9 @@ void benchmark::run() {
     }
 }
 
-static string_view operation_name(operation op) {
-    return op == operation::get ? "get" : "set";
+static void print_task(size_t task_index, const command &cmd) {
+    cout << "task" << task_index + 1 << "> set: " << op::set_count(cmd.ops)
+         << ", get: " << op::get_count(cmd.ops) << ", ops: " << cmd.size << '\n';
 }
 
 static void probe_connect(asio::ip::tcp::endpoint endpoint) {
@@ -109,5 +122,21 @@ static void probe_connect(asio::ip::tcp::endpoint endpoint) {
     }
     if (connect_error) {
         throw runtime_error(connect_error.message());
+    }
+}
+
+static void send_reset(asio::ip::tcp::endpoint endpoint) {
+    asio::io_context context;
+    asio::ip::tcp::socket socket{context};
+    socket.connect(endpoint);
+
+    static const string request = "R\r\r";
+    asio::write(socket, asio::buffer(request));
+
+    array<char, 64> buffer{};
+    size_t n = socket.read_some(asio::buffer(buffer));
+    string response{buffer.data(), n};
+    if (!response.starts_with("00\r")) {
+        throw runtime_error("reset failed: " + response);
     }
 }

@@ -28,6 +28,9 @@ class store {
                                ttl_t ttl = TTL_MAX);
     // 获取信息（低效方法，请勿使用在核心业务）
     std::string_view info();
+
+    // 重置库（仅用于调试）
+    void reset_debug();
 };
 
 } // namespace xkv

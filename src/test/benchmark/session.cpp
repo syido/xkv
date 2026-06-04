@@ -21,7 +21,7 @@ using uint = unsigned int;
 static void append_random_field(string &request, ushort min_len, ushort max_len);
 
 // 根据命令生成一条协议请求
-static void make_request(const command &cmd, string &request);
+static void make_request(char op, const command &cmd, string &request);
 
 // 一个session代表一个异步TCP连接
 class session : public enable_shared_from_this<session> {
@@ -39,6 +39,8 @@ class session : public enable_shared_from_this<session> {
     array<char, 4096> buffer{};
     // 当前连接复用的请求缓冲区
     string request;
+    // 当前连接在ops序列中的位置
+    uint op_index = 0;
 
   public:
     // 创建一个异步连接session
@@ -87,7 +89,15 @@ class session : public enable_shared_from_this<session> {
             return;
         }
 
-        make_request(cmd, request);
+        uint set_count = op::set_count(cmd.ops);
+        uint total_count = op::total_count(cmd.ops);
+        char current_op = op_index < set_count ? 's' : 'g';
+        ++op_index;
+        if (op_index == total_count) {
+            op_index = 0;
+        }
+
+        make_request(current_op, cmd, request);
 
         auto self = shared_from_this();
         auto on_write = [self](const asio::error_code &error, size_t) {
@@ -122,14 +132,14 @@ static void append_random_field(string &request, ushort min_len, ushort max_len)
     request.append(field);
 }
 
-static void make_request(const command &cmd, string &request) {
+static void make_request(char op, const command &cmd, string &request) {
     request.clear();
-    request.push_back(cmd.op == operation::get ? 'g' : 's');
+    request.push_back(op);
     request.push_back('\r');
     append_random_field(request, cmd.min_len, cmd.max_len);
     request.push_back('\r');
 
-    if (cmd.op == operation::set) {
+    if (op == 's') {
         append_random_field(request, cmd.min_len, cmd.max_len);
         request.push_back('\r');
     }

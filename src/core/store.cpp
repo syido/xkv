@@ -72,4 +72,10 @@ auto store::info() -> string_view {
     return make_tempview(info.str());
 }
 
+auto store::reset_debug() -> void {
+    auto ptr = &table;
+    table = hashtable<xstring>{};
+    cout << ptr;
+}
+
 } // namespace xkv

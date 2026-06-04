@@ -38,6 +38,8 @@
   - 使用第三方内存分配器
   - 哈希表的缩容
   - 删除到期数据
+- 改进
+  - 测试hashtable中桶的容器存放桶还是桶的指针更合适
 
 ## 使用
 
@@ -71,7 +73,7 @@ s\r3key\r5value\r\r
 
 ### 压力测试
 
-链接`xkv_test`静态库并使用以下代码执行压力测试，配置可在`test/benchmark/benchmark.hpp`中查阅。
+链接`xkv_test`静态库并使用以下代码执行压力测试，配置和命令可在`test/benchmark/benchmark.hpp`中查阅。
 
 ```cpp
 #include <test/benchmark/benchmark.hpp>
@@ -82,8 +84,8 @@ using namespace xkvt::benchmark;
 int main() {
     config conf;
     commands cmds = {
-        command{.op = operation::set, .size = 1000000, .min_len = 100, .max_len = 200},
-        command{.op = operation::get, .size = 10000000, .min_len = 10, .max_len = 20}
+        command{.ops = op::set + 10 * op::get, .size = 10000, .min_len = 100, .max_len = 200, .reset = true},
+        command{.ops = op::set, .size = 10000000, .min_len = 100, .max_len = 200},
     };
 
     benchmark{conf, cmds}.run();

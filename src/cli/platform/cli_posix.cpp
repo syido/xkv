@@ -8,8 +8,17 @@
 using namespace xkv;
 using namespace std;
 
-bool cli::create_process_if_necessary(int, char **) {
+bool cli::create_process_if_necessary(int argc, char **argv) {
     pid_t pid = fork();
+
+    // 对于posix，现在也支持--cli启动客户端
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "--cli" || arg == "-c") {
+            cli{}.loop();
+            return false;
+        }
+    }
 
     if (pid == 0) {
         cli{}.loop();

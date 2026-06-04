@@ -1,9 +1,9 @@
 #include "xstring.hpp"
+#include "core/data/xdata.hpp"
 
 #include <cstring>
 #include <string>
 #include <string_view>
-#include <utility>
 
 using namespace xkv;
 using namespace std;
@@ -21,9 +21,13 @@ xstring::xstring(string_view str, ttl_t ttl) : xdata{xkv::meta{ttl}} {
 }
 
 // 拷贝构造函数，我们默认string没有自引用，因此直接拷贝地址
-xstring::xstring(xstring &&rhs) : xdata{xkv::meta{}} {
-    std::swap(xstr, rhs.xstr);
-    std::swap(meta, rhs.meta);
+// xstring::xstring(xstring &&rhs) : xdata{xkv::meta{}} {
+//     std::swap(xstr, rhs.xstr);
+//     std::swap(meta, rhs.meta);
+// }
+
+xstring::xstring(xstring &&rhs) : xdata{rhs.meta}, xstr{rhs.xstr} {
+    rhs.meta.extra = EXTRA_EMPTY;
 }
 
 xstring &xkv::xstring::operator=(xstring &&) {

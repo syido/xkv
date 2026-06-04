@@ -1,4 +1,5 @@
 #include "handler.hpp"
+#include <shared/config.hpp>
 #include <shared/result.hpp>
 
 #include <string>
@@ -12,6 +13,7 @@ constexpr static char op_set = 's';
 constexpr static char op_remove = 'r';
 constexpr static char op_cas = 'c';
 constexpr static char op_info = 'i';
+constexpr static char op_reset = 'R';
 
 auto handler::handle(const string &request) -> handler::result {
     string_view req = request;
@@ -67,12 +69,20 @@ auto handler::handle(const string &request) -> handler::result {
         return prase_fail;
     }
 
-    // INFO不需要参数
-    if (op == op_info) {
+    // INFO和RESET_DEBUG不需要参数
+    if (op == op_info || op == op_reset) {
         if (invalid_spliter()) {
             return prase_fail;
-        } else {
+        } else if (op == op_info) {
             return {app_result::ok, main_store.info()};
+        } else if (op == op_reset) {
+            // 调试环节通过，否则拒绝
+            if constexpr (DEBUG) {
+                main_store.reset_debug();
+                return {app_result::ok, };
+            } else {
+                return {app_result::debug_off, };
+            }
         }
     }
 

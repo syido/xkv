@@ -76,4 +76,12 @@ inline void app_config::dump(app_config config, std::string file) {
 inline app_config _config;
 inline const app_config &config = _config;
 
+// 是否处于调试环境
+inline constexpr bool DEBUG =
+#ifdef NDEBUG
+    false;
+#else
+    true;
+#endif
+
 } // namespace xkv

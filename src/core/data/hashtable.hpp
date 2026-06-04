@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <expected>
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <sys/types.h>
@@ -25,13 +26,14 @@ class hashtable : public xcontainer {
   private:
     struct entry;                                            // 键值对类型 <std::string, E>
     using bucket = std::vector<entry>;                       // 桶类型
+    using bucket_ptr = std::unique_ptr<bucket>;              // 桶指针
     using bucket_iterator = typename bucket::iterator;       // 桶迭代器
     using entry_pos = std::tuple<bucket &, bucket_iterator>; // 元素位置
 
     int rehash_process = NOT_REHASHING;           // rehash已完成的进度，-2表示不在rehash，-1表示即将向扩容
     unsigned int old_size_expr = 0;               // 若在rehash时，旧桶数的幂
     unsigned int table_size_expr = old_size_expr; // 桶数的幂
-    std::vector<bucket *> table;                  // 桶表
+    std::vector<bucket_ptr> table = std::vector<bucket_ptr>(1 << table_size_expr); // 桶表
 
     // 获取元素所在桶、迭代器与用之模的幂（提供给get和remove），并决定找不到是创建还是返回错误（提供给set）
     std::expected<entry_pos, app_result> find(std::string_view key, bool throw_not_found = true);
@@ -53,10 +55,7 @@ class hashtable : public xcontainer {
     struct info;
 
   public:
-    // 哈希表构造函数
-    hashtable();
-    // 哈希表析构函数
-    ~hashtable();
+    explicit hashtable() = default;
 
     // 查询元素
     std::expected<const E *, app_result> get(std::string_view key);
@@ -119,7 +118,7 @@ auto hashtable<E>::find(std::string_view key, bool create_if_not_found)
             }
         }
     } else if (create_if_not_found) {
-        table[mod] = new bucket{};
+        table[mod] = std::make_unique<bucket>();
     } else {
         return std::unexpected(app_result::not_found);
     }
@@ -147,20 +146,6 @@ auto hashtable<E>::get_expr_mod(size_t key, size_t expr) const -> size_t {
     return key & ((1 << expr) - 1);
 }
 
-template <supported_type E>
-hashtable<E>::hashtable() : table(1 << old_size_expr) {
-    /* 构造 */
-}
-
-template <supported_type E>
-hashtable<E>::~hashtable() {
-    for (bucket *&vec : table) {
-        if (vec != nullptr) {
-            delete vec;
-        }
-    }
-}
-
 // TODO: 没有处理扩容失败、没有处理缩容
 template <supported_type E>
 auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
@@ -184,18 +169,17 @@ auto hashtable<E>::check_rehash(bool changed, bool too_big) -> app_result {
                 size_t new_mod = get_expr_mod(get_hash(it->key), table_size_expr);
                 if (new_mod != old_mod) { // 新模不同于旧模，增到新桶中，从旧桶移出
                     if (table[new_mod] == nullptr) {
-                        table[new_mod] = new bucket;
+                        table[new_mod] = std::make_unique<bucket>();
                     }
-                    table[new_mod]->emplace_back(std::move(*it));
+                    table[new_mod]->push_back(std::move(*it));
                     std::swap(*it, old_bucket.back());
-                    old_bucket.pop_back();
+                    old_bucket.pop_back(); // 记录一下，这里发生过内存泄漏 :(
                 } else {
                     ++it;
                 }
             }
 
             if (old_bucket.empty()) {
-                delete table[old_mod];
                 table[old_mod] = nullptr;
             }
         }

@@ -10,5 +10,6 @@ vcpkg_installed
 !.gitignore
 .DS_Store
 .vscode
+.idea
 
 ns*

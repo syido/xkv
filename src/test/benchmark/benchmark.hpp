@@ -9,17 +9,31 @@
 namespace xkvt::benchmark {
 
 // 基准测试操作类型
-enum class operation {
-    get, // GET命令
-    set  // SET命令
+struct op {
+    using uint = unsigned int;
+    static const uint get = 1;       // GET命令计数单位，低16位
+    static const uint set = 1 << 16; // SET命令计数单位，高16位
+
+    static uint get_count(uint value) {
+        return value & 0xFFFFU;
+    }
+
+    static uint set_count(uint value) {
+        return value >> 16;
+    }
+
+    static uint total_count(uint value) {
+        return get_count(value) + set_count(value);
+    }
 };
 
 // 基准测试命令
 struct command {
-    operation op;      // 操作类型
-    int size = 0;      // 单次操作次数
-    int min_len = 100; // 最小数据长度
-    int max_len = 300; // 最大数据长度
+    unsigned int ops;   // 操作计数组合，高16位set，低16位get
+    int size = 0;       // 单次操作次数
+    int min_len = 100;  // 最小数据长度
+    int max_len = 300;  // 最大数据长度
+    bool reset = false; // 运行前先重置
 };
 
 // 命令数组
