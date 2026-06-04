@@ -22,7 +22,7 @@ enum class app_result : int {
     loss_response, // 响应丢失
     debug_off    , // 不可在当前版本调试命令
 
-    unkown = 99, // 仅用于错误码识别错误的未知错误类型，不会在核心业务中出现
+    unknown = 99, // 仅用于错误码识别错误的未知错误类型，不会在核心业务中出现
 
     // 上限限制
     _max_limit

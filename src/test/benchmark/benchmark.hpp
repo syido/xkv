@@ -45,6 +45,7 @@ struct config {
     int connections = 100;          // 连接数
     std::string host = "localhost"; // 服务器地址
     std::string port = "12463";     // 服务器端口
+    bool wait_server = false;       // 等待服务器启动
 };
 
 struct shared_state {

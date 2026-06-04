@@ -17,18 +17,16 @@ using namespace std;
 // 输出任务配置
 static void print_task(size_t task_index, const command &cmd);
 // 试探服务端连接
-static void probe_connect(asio::ip::tcp::endpoint endpoint);
+static asio::ip::tcp::endpoint probe_connect(const config &conf);
+// 单次试探服务端连接
+static void probe_connect_once(asio::ip::tcp::endpoint endpoint);
 // 重置服务端状态
 static void send_reset(asio::ip::tcp::endpoint endpoint);
 
 benchmark::benchmark(config conf, vector<command> commands) : conf(conf), commands(commands) {}
 
 void benchmark::run() {
-    asio::io_context probe_context;
-    asio::ip::tcp::resolver resolver{probe_context};
-    auto resolved = resolver.resolve(asio::ip::tcp::v4(), conf.host, conf.port);
-    asio::ip::tcp::endpoint endpoint = resolved.begin()->endpoint();
-    probe_connect(endpoint);
+    asio::ip::tcp::endpoint endpoint = probe_connect(conf);
 
     for (size_t task_index = 0; task_index < commands.size(); task_index++) {
         const command &cmd = commands[task_index];
@@ -89,7 +87,35 @@ static void print_task(size_t task_index, const command &cmd) {
          << ", get: " << op::get_count(cmd.ops) << ", ops: " << cmd.size << '\n';
 }
 
-static void probe_connect(asio::ip::tcp::endpoint endpoint) {
+static asio::ip::tcp::endpoint probe_connect(const config &conf) {
+    bool printed_wait = false;
+
+    while (true) {
+        try {
+            asio::io_context probe_context;
+            asio::ip::tcp::resolver resolver{probe_context};
+            auto resolved = resolver.resolve(asio::ip::tcp::v4(), conf.host, conf.port);
+            asio::ip::tcp::endpoint endpoint = resolved.begin()->endpoint();
+            probe_connect_once(endpoint);
+            if (printed_wait) {
+                cout << "服务器已启动\n";
+            }
+            return endpoint;
+        } catch (const exception &) {
+            if (!conf.wait_server) {
+                throw;
+            }
+
+            if (!printed_wait) {
+                cout << "等待服务器启动...\n";
+                printed_wait = true;
+            }
+            this_thread::sleep_for(chrono::milliseconds{200});
+        }
+    }
+}
+
+static void probe_connect_once(asio::ip::tcp::endpoint endpoint) {
     asio::io_context context;
     asio::ip::tcp::socket socket{context};
     asio::steady_timer timer{context};

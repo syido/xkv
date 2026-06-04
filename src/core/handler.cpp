@@ -75,14 +75,15 @@ auto handler::handle(const string &request) -> handler::result {
             return prase_fail;
         } else if (op == op_info) {
             return {app_result::ok, main_store.info()};
-        } else if (op == op_reset) {
+        } else {
+            main_store.reset_debug();
+            return {app_result::ok, };
             // 调试环节通过，否则拒绝
-            if constexpr (DEBUG) {
-                main_store.reset_debug();
-                return {app_result::ok, };
-            } else {
-                return {app_result::debug_off, };
-            }
+            // TODO: 修正，这里暂时不增加这个逻辑
+            // if constexpr (DEBUG) {
+            // } else {
+            //     return {app_result::debug_off, };
+            // }
         }
     }
 

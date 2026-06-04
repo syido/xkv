@@ -17,7 +17,7 @@ using namespace std;
 static pair<bool, string> prase_result(string_view result) {
     static auto to_app_result = [](string_view result) -> app_result {
         if (result.size() != 2 || result[0] < '0' || result[0] > '9' || result[1] < '0' || result[1] > '9') {
-            return app_result::unkown;
+            return app_result::unknown;
         }
 
         int code = result[1] - '0' + 10 * (result[0] - '0');
@@ -40,7 +40,7 @@ static pair<bool, string> prase_result(string_view result) {
         return {false, "解析错误"};
     case app_result::loss_response:
         return {false, "响应丢失"};
-    case app_result::unkown:
+    case app_result::unknown:
         return {false, "???客户端错误"};
 
     default:
